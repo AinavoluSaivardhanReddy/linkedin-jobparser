@@ -80,11 +80,10 @@ def scrape_job_postings(job_ids, filter_time, roles):
                     if flag == False:
                         jobs.append(job_id)
             except Exception as e:
-                print("\nRetry:"+str(retries))
+                print("\nRetry:"+str(retries), end='\r')
                 if retries < MAX_RETRIES:
                     retries += 1
                     continue
-                print(e)
                 break
         total += i
     print("Jobs filtered:", len(jobs), " out of:", total)
