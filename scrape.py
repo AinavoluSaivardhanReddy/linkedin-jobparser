@@ -66,7 +66,7 @@ def scrape_job_postings(job_ids, filter_time, roles):
                 if len(alljobs_on_this_page) == 0:
                     raise ValueError('No jobs found on this page')
                 i += len(alljobs_on_this_page) + 1
-                print(f"Scrapped {i} jobs", end='\r', flush=True)
+                print(f"Scraped {i} jobs", end='\r', flush=True)
                 for x in range(0,len(alljobs_on_this_page)):
                     job_id = alljobs_on_this_page[x].find("div",{"class":"base-card"}).get('data-entity-urn').split(":")[3]
                     jobcard = alljobs_on_this_page[x].find("div",{"class":"base-card"}).text.strip()
