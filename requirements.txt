@@ -4,3 +4,4 @@ transformers==4.36.2
 requests==2.25.1
 urllib3==1.26.4
 argparse==1.4.0
+sentencepiece==0.1.99

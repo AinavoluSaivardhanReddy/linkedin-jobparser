@@ -11,8 +11,8 @@ parser.add_argument("--size", type=str, help="size of the flan-t5 model used to 
 
 args = parser.parse_args()
 
-source_file_name = 'linkedinjobs6.csv'
-target_file = 'validjobs.csv'
+source_file_name = 'linkedinjobs5.csv'
+target_file = 'validjobs1.csv'
 
 max_experience = 2              # the maximum experience allowed for the jobs
 if args.exp != None:

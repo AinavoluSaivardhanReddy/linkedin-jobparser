@@ -70,13 +70,12 @@ def scrape_job_postings(job_ids, filter_time, roles):
                 for x in range(0,len(alljobs_on_this_page)):
                     job_id = alljobs_on_this_page[x].find("div",{"class":"base-card"}).get('data-entity-urn').split(":")[3]
                     jobcard = alljobs_on_this_page[x].find("div",{"class":"base-card"}).text.strip()
-                    flag = False
                     keywords = ['engineer', 'developer', 'scientist', 'software']
+                    flag = True
                     for keyword in keywords:
-                        if keyword not in jobcard.lower():
-                            flag = True
-                        else:
+                        if keyword in jobcard.lower():
                             flag = False
+                            break
                     if int(job_id) in job_ids:
                         flag = True
                     for blocked in blacklist:
