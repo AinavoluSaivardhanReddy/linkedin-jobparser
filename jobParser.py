@@ -16,7 +16,6 @@ logging.disable(logging.CRITICAL + 1)
 
 
 def find_highest_lowest(s):
-
     numbers = re.findall(r'\d+\+|\d+-\d+|\d+', s)
     processed_numbers = []
     for num in numbers:
@@ -44,6 +43,13 @@ def get_model(size):
 
 def parse_experience(tokenizer, model, job_description, question):
     input_text = f"Job Description: {job_description} question={question}, Answer:"
+    input_ids = tokenizer(input_text, return_tensors="pt").input_ids
+    outputs = model.generate(input_ids, max_new_tokens=20, max_length=50)
+    result = BeautifulSoup(tokenizer.decode(outputs[0]), "html.parser").get_text(separator=' ', strip=True)
+    return result
+
+def parse_title(tokenizer, model, job_title, question):
+    input_text = f"Job title: {job_title} question={question}, Answer with yes or no:"
     input_ids = tokenizer(input_text, return_tensors="pt").input_ids
     outputs = model.generate(input_ids, max_new_tokens=20, max_length=50)
     result = BeautifulSoup(tokenizer.decode(outputs[0]), "html.parser").get_text(separator=' ', strip=True)

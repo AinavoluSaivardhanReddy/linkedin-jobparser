@@ -4,6 +4,7 @@ import os
 import pandas as pd
 from urllib.parse import quote, unquote
 import time
+from jobParser import parse_title, get_model
 
 
 MAX_RETRIES = 5 # number of retries while looking for jobs of a particular role
@@ -12,12 +13,20 @@ MAX_RETRIES = 5 # number of retries while looking for jobs of a particular role
 keywords = [
         "U.S. Citizenship",
         "U.S. Only",
-        "USA Only",
+        "US Only",
         "TS/SCI",
         "Polygraph",
         "security clearance",
         "Defence",
-        "Aerospace"
+        "Aerospace",
+        "US Work Authorization",
+        "U.S. Work Authorization",
+        "US Citizen",
+        "U.S. Citizen",
+        "U.S citizen",
+        "Green Card",
+        "Clearance Required",
+        "Secret clearance"
     ]
 
 # This is a list of companies that are ignored 
@@ -32,7 +41,10 @@ blacklist = [
             'Control Engineer', 'Collins Aerospace', 'Georgia Tech', 'System Engineer', 'Systems Software Engineer', 'Leidos',
             'Site Reliability Engineer', 'Piper Companies', 'ios', 'Energy Jobline', 'Firmware', 'Anduril', '.NET', 'Pratt & Whitney',
             'Metrea', 'Dev10', 'Patterned Learning Career', 'get.it', 'HireMeFast', 'Phoenix Recruitment LLC', 'Genie Healthcare',
-            'Sicredi'
+            'Sicredi', 'TekWissen', 'Creative Financial Staffing', 'Proconex', 'American Cruise Lines', 'eteam', 'Primary Talent Partners',
+            'Fidelity TalentSource', 'Cottingham & Butler', 'Phoenix Recruitment', 'Wabtec Corporation', 'Oak Ridge National Laboratory',
+            'Luminate', 'Freddie Mac', 'Prudential Financial', 'VPNforAndroid', 'Almac Group', 'Hertz', 'Jobs via eFinancialCareers', 'TalentBurst',
+            'Procter & Gamble', 'Medpace', 'Robert Half', 'Russell Tobin', 'Genesis10', 'Aditi Consulting', 'Skiltrek', 'SPECTRAFORCE'
         ]
 
 def load_existing_jobIDs(file_name):
@@ -49,7 +61,8 @@ def scrape_job_postings(job_ids, filter_time, roles):
     target_url='https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords="{}"&location=United%20States&geoId=103644278&f_E=2&f_TPR=r{}&start={}'
     
     roles = [quote(role) for role in roles]
-    
+    relevance = []
+    tokenizer, model = get_model("large")
     total = 0
     for role in roles:
         alljobs_on_this_page={}
@@ -70,12 +83,16 @@ def scrape_job_postings(job_ids, filter_time, roles):
                 for x in range(0,len(alljobs_on_this_page)):
                     job_id = alljobs_on_this_page[x].find("div",{"class":"base-card"}).get('data-entity-urn').split(":")[3]
                     jobcard = alljobs_on_this_page[x].find("div",{"class":"base-card"}).text.strip()
-                    keywords = ['engineer', 'developer', 'scientist', 'software']
+                    job_title = alljobs_on_this_page[x].find("h3", {"class": "base-search-card__title"}).text.strip()
+                    keywords = ['engineer', 'developer', 'scientist', 'software', 'frontend', 'backend']
                     flag = True
                     for keyword in keywords:
                         if keyword in jobcard.lower():
                             flag = False
                             break
+                    all_roles = ', '.join([unquote(role) for role in roles])
+                    # answer = parse_title(tokenizer, model, job_title, f"Is this job title relevant to any of these roles ${all_roles}")
+                    # relevance.append([job_title, answer])
                     if int(job_id) in job_ids:
                         flag = True
                     for blocked in blacklist:
@@ -91,7 +108,10 @@ def scrape_job_postings(job_ids, filter_time, roles):
                     continue
                 break
         total += i
-    print("Jobs filtered:", len(jobs), " out of:", total)
+    # df1 = pd.DataFrame(relevance)
+    # df1.columns = ["Job title", "Relevance"]
+    # df1.to_csv("relevance.csv", index=False) 
+    print("Jobs filtered:", len(set(jobs)), " out of:", total)
     return list(set(jobs))
 
 def progress_bar(index, length):

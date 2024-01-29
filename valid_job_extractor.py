@@ -11,8 +11,8 @@ parser.add_argument("--size", type=str, help="size of the flan-t5 model used to 
 
 args = parser.parse_args()
 
-source_file_name = 'linkedinjobs5.csv'
-target_file = 'validjobs1.csv'
+source_file_name = 'linkedinjobs4.csv'
+target_file = 'validjobs2.csv'
 
 max_experience = 2              # the maximum experience allowed for the jobs
 if args.exp != None:
@@ -27,7 +27,7 @@ if args.size != None:
     model_size = args.size
 
 # This is a list of roles that are searched for on linkedin
-roles = ['Full Stack', 'Software Engineer', 'Software Developer', 'Founding Engineer', 'Frontend', 'Backend', 'Data Engineer']
+roles = ['Full Stack', '"Software Engineer"', '"Software Developer"', 'Founding Engineer', 'Frontend', 'Backend', 'Data Engineer']
 
 get_job_details(source_file_name, roles, filter_time)
 process_linkedin_jobs(source_file_name, model_size)
@@ -36,13 +36,15 @@ df = pd.read_csv(source_file_name)
 df['experience'] = pd.to_numeric(df['experience'], errors='coerce')
 df = df[df['experience'] <= max_experience]
 df['target_url'] = df['job_id'].apply(lambda x: f"https://www.linkedin.com/jobs/view/{x}")
+df = df.astype(str)
+group_columns = ['company', 'job-title', 'description', 'level', 'html', 'experience']
+df['_temp_order'] = range(len(df))
+agg_functions = {col: 'min' if col == '_temp_order' else lambda x: ', '.join(x) for col in df.columns.difference(group_columns)}
+df = df.groupby(group_columns).agg(agg_functions).reset_index()
+df = df.sort_values(by='_temp_order')
+df = df.drop(columns=['_temp_order', 'job_id', 'html', 'level', 'description'])
 
-if os.path.exists(target_file):
-    existing_jobs = pd.read_csv(target_file)
-    df = df[~df['job_id'].isin(existing_jobs['job_id'])]
-    df.to_csv(target_file, mode='a', index=False, header=False, encoding='utf-8', lineterminator='\n')
-else:
-    df.to_csv(target_file, mode='w', index=False, header=True, encoding='utf-8', lineterminator='\n')
+df.to_csv(target_file, mode='w', index=False, header=True, encoding='utf-8', lineterminator='\n')
 
 
 
