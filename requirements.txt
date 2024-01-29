@@ -1,7 +1,7 @@
-pandas==1.2.3
-beautifulsoup4==4.9.3
-transformers==4.36.2
-requests==2.25.1
-urllib3==1.26.4
-argparse==1.4.0
-sentencepiece==0.1.99
+pandas
+beautifulsoup4
+transformers
+requests
+urllib3
+argparse
+sentencepiece
